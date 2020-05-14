@@ -44,6 +44,11 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        return
+    if isinstance(error, commands.CheckFailure):
+        return
+
     await ctx.send(error)
 
 
