@@ -4,6 +4,7 @@ import json
 
 bot = commands.Bot(command_prefix=">")
 data = json.loads(open("Points.json").read())
+channel = 354019501865435137
 
 
 def get_balance(id):
@@ -22,6 +23,10 @@ def change_balance(id, amount):
 def get_leaderboard():
     leaderboard = dict(data)
     return sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
+
+
+def check_channel(ctx):
+    return ctx.channel.id == channel
 
 
 def save():
@@ -43,12 +48,14 @@ async def on_command_error(ctx, error):
 
 
 @bot.group(invoke_without_command=True)
+@commands.check(check_channel)
 async def points(ctx):
     """I usually have people pay for cracking me open like that"""
     await ctx.send("You have %d Science Points" % get_balance(ctx.author.id))
 
 
 @points.command()
+@commands.check(check_channel)
 async def give(ctx, other: discord.Member, amount: int = 0):
     if amount == 0:
         await ctx.send("You really want to give nothing? How heartless")
@@ -77,6 +84,7 @@ async def add(ctx, target: discord.Member, amount: int = 0):
 
 
 @points.command()
+@commands.check(check_channel)
 async def top(ctx):
     output = ""
     for thing in get_leaderboard():
@@ -92,6 +100,7 @@ async def top(ctx):
 
 @commands.is_owner()
 @bot.command()
+@commands.check(check_channel)
 async def repeat(ctx):
     stuff = ctx.message.content[8:]
     if stuff[0] == "\\":
