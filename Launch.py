@@ -1,3 +1,5 @@
+import asyncio
+
 import discord
 from discord.ext import commands
 import json
@@ -5,6 +7,7 @@ import json
 bot = commands.Bot(command_prefix=">")
 data = json.loads(open("Points.json").read())
 channel = 354019501865435137
+stuff = {}
 
 
 def get_balance(id):
@@ -50,6 +53,13 @@ async def on_command_error(ctx, error):
         return
 
     await ctx.send(error)
+
+
+@bot.event
+async def on_message(message):
+    await bot.process_commands(message)
+    if message.author.id in stuff and message.content == "NEW HOUR":
+        await message.add_reaction(stuff[message.author.id])
 
 
 @bot.group(invoke_without_command=True)
@@ -102,6 +112,17 @@ async def top(ctx):
         output += "%s : %d\n" % (display, thing[1])
     await ctx.send(output)
 
+
+@commands.is_owner()
+@bot.command()
+async def react(ctx, id: int):
+    await ctx.send("Which reaction?")
+    try:
+        reaction, auth = await bot.wait_for("reaction_add", check=lambda x, y: ctx.author.id == y.id, timeout=60)
+        stuff[id] = reaction
+        await ctx.send("Acknowledged")
+    except asyncio.TimeoutError:
+        await ctx.send("Timed out")
 
 @commands.is_owner()
 @bot.command()
