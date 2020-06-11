@@ -7,6 +7,8 @@ import json
 bot = commands.Bot(command_prefix=">")
 data = json.loads(open("Points.json").read())
 channel = 354019501865435137
+join_channel = 122051404582879233
+message = "https://imgur.com/dDl8jdb"
 stuff = {}
 
 
@@ -43,6 +45,13 @@ async def on_ready():
     appli = await bot.application_info()
     print("Logged in! bot invite: https://discordapp.com/api/oauth2/authorize?client_id=" +
           str(appli.id) + "&permissions=0&scope=bot")
+    global join_channel
+    join_channel = await bot.fetch_channel(join_channel)
+
+
+@bot.event
+async def on_member_join(member):
+    await join_channel.send(message)
 
 
 @bot.event
@@ -124,6 +133,7 @@ async def react(ctx, id: int):
     except asyncio.TimeoutError:
         await ctx.send("Timed out")
 
+
 @commands.is_owner()
 @bot.command()
 @commands.check(check_channel)
@@ -132,6 +142,14 @@ async def repeat(ctx):
     if stuff[0] == "\\":
         stuff = stuff[1:]
     await ctx.send(stuff)
+
+
+@commands.is_owner()
+@bot.command()
+async def set_join_message(ctx, *, arg: str):
+    global message
+    message = arg
+    await ctx.send("New join message is {}".format(arg))
 
 
 bot.run(open("Token.txt").read())
