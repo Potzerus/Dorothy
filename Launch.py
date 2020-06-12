@@ -46,7 +46,8 @@ async def on_ready():
     print("Logged in! bot invite: https://discordapp.com/api/oauth2/authorize?client_id=" +
           str(appli.id) + "&permissions=0&scope=bot")
     global join_channel
-    join_channel = await bot.fetch_channel(join_channel)
+    if not isinstance(join_channel,discord.abc.Snowflake):
+        join_channel = await bot.fetch_channel(join_channel)
 
 
 @bot.event
