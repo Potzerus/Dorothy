@@ -46,7 +46,7 @@ async def on_ready():
     print("Logged in! bot invite: https://discordapp.com/api/oauth2/authorize?client_id=" +
           str(appli.id) + "&permissions=0&scope=bot")
     global join_channel
-    if not isinstance(join_channel,discord.abc.Snowflake):
+    if not isinstance(join_channel, discord.abc.Snowflake):
         join_channel = await bot.fetch_channel(join_channel)
 
 
@@ -110,14 +110,19 @@ async def add(ctx, target: discord.Member, amount: int = 0):
 
 @points.command()
 @commands.check(check_channel)
-async def top(ctx, amount=10):
+async def top(ctx, amount: int = 10, mode: str = "default"):
+    if mode not in ["default", "all"]:
+        mode = "default"
     output = ""
     leaderboard = get_leaderboard()
     for thing in leaderboard[:min(len(leaderboard), amount)]:
         user = bot.get_user(int(thing[0]))
         display = ""
         if not hasattr(user, "display_name"):
-            display = "User left the server"
+            if mode == "default":
+                continue
+            if mode == "all":
+                display = "User left the server"
         elif not hasattr(user, "nick"):
             display = user.display_name
         else:
