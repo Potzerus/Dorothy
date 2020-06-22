@@ -123,7 +123,7 @@ async def top(ctx, amount=10):
         else:
             display = user.nick
         output += "%s : %d\n" % (display, thing[1])
-    await ctx.send(output)
+    await ctx.send(output or "No Entries, try a different amount")
 
 
 @commands.is_owner()
