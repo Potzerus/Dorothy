@@ -113,7 +113,7 @@ async def add(ctx, target: discord.Member, amount: int = 0):
 async def top(ctx, amount=10):
     output = ""
     leaderboard = get_leaderboard()
-    for thing in leaderboard[:min(len(leaderboard), 10)]:
+    for thing in leaderboard[:min(len(leaderboard), amount)]:
         user = bot.get_user(int(thing[0]))
         display = ""
         if not hasattr(user, "display_name"):
