@@ -118,7 +118,7 @@ async def top(ctx, amount=10):
         display = ""
         if not hasattr(user, "display_name"):
             display = "User left the server"
-        if not hasattr(user, "nick"):
+        elif not hasattr(user, "nick"):
             display = user.display_name
         else:
             display = user.nick
