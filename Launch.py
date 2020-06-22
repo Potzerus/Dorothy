@@ -110,11 +110,14 @@ async def add(ctx, target: discord.Member, amount: int = 0):
 
 @points.command()
 @commands.check(check_channel)
-async def top(ctx):
+async def top(ctx, amount=10):
     output = ""
-    for thing in get_leaderboard():
+    leaderboard = get_leaderboard()
+    for thing in leaderboard[:min(len(leaderboard), 10)]:
         user = bot.get_user(int(thing[0]))
         display = ""
+        if not hasattr(user, "display_name"):
+            display = "User left the server"
         if not hasattr(user, "nick"):
             display = user.display_name
         else:
