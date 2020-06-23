@@ -6,9 +6,11 @@ import json
 
 bot = commands.Bot(command_prefix=">")
 data = json.loads(open("Points.json").read())
-channel = 354019501865435137
-join_channel = 122051404582879233
-message = "https://imgur.com/dDl8jdb"
+channel_id = 354019501865435137
+channel = None
+join_channel_id = 122051404582879233
+join_channel = None
+join_message = "https://imgur.com/dDl8jdb"
 stuff = {}
 
 
@@ -31,7 +33,7 @@ def get_leaderboard():
 
 
 def check_channel(ctx):
-    return ctx.channel.id == channel
+    return ctx.channel.id == channel_id
 
 
 def save():
@@ -47,12 +49,13 @@ async def on_ready():
           str(appli.id) + "&permissions=0&scope=bot")
     global join_channel
     if not isinstance(join_channel, discord.abc.Snowflake):
-        join_channel = await bot.fetch_channel(join_channel)
+        join_channel = await bot.fetch_channel(join_channel_id)
 
 
 @bot.event
 async def on_member_join(member):
-    await join_channel.send(message)
+    # noinspection PyUnresolvedReferences
+    await join_channel.send(join_message)
 
 
 @bot.event
@@ -147,7 +150,7 @@ async def react(ctx, id: int):
 @bot.command()
 @commands.check(check_channel)
 async def repeat(ctx):
-    stuff = ctx.message.content[8:]
+    stuff = ctx.join_message.content[8:]
     if stuff[0] == "\\":
         stuff = stuff[1:]
     await ctx.send(stuff)
@@ -156,9 +159,9 @@ async def repeat(ctx):
 @commands.is_owner()
 @bot.command()
 async def set_join_message(ctx, *, arg: str):
-    global message
-    message = arg
-    await ctx.send("New join message is {}".format(arg))
+    global join_message
+    join_message = arg
+    await ctx.send("New join join_message is {}".format(arg))
 
 
 bot.run(open("Token.txt").read())
