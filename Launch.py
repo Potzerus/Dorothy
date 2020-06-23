@@ -12,6 +12,7 @@ join_channel_id = 122051404582879233
 join_channel = None
 join_message = "https://imgur.com/dDl8jdb"
 stuff = {}
+response_json = json.loads(open("responses.json").read())
 
 
 def get_balance(id):
@@ -39,6 +40,8 @@ def check_channel(ctx):
 def save():
     with open("Points.json", "w") as da_file:
         da_file.write(json.dumps(data))
+    with open("responses.json", "w") as da_file:
+        da_file.write(json.dumps(response_json))
 
 
 @bot.event
@@ -73,6 +76,11 @@ async def on_message(message):
     await bot.process_commands(message)
     if message.author.id in stuff and message.content == "NEW HOUR":
         await message.add_reaction(stuff[message.author.id])
+    if not message.author.bot:
+        for k, v in response_json.items():
+            if k in message.content.lower():
+                await message.channel.send(v)
+                break
 
 
 @bot.group(invoke_without_command=True)
@@ -103,9 +111,9 @@ async def give(ctx, other: discord.Member, amount: int = 0):
     save()
 
 
+@points.command(name="add")
 @commands.is_owner()
-@points.command()
-async def add(ctx, target: discord.Member, amount: int = 0):
+async def points_add(ctx, target: discord.Member, amount: int = 0):
     change_balance(target.id, amount)
     await ctx.send("Balance changed by %d!" % amount)
     save()
@@ -134,8 +142,8 @@ async def top(ctx, amount: int = 10, mode: str = "default"):
     await ctx.send(output or "No Entries, try a different amount")
 
 
-@commands.is_owner()
 @bot.command()
+@commands.is_owner()
 async def react(ctx, id: int):
     await ctx.send("Which reaction?")
     try:
@@ -146,9 +154,8 @@ async def react(ctx, id: int):
         await ctx.send("Timed out")
 
 
-@commands.is_owner()
 @bot.command()
-@commands.check(check_channel)
+@commands.is_owner()
 async def repeat(ctx):
     stuff = ctx.join_message.content[8:]
     if stuff[0] == "\\":
@@ -156,8 +163,33 @@ async def repeat(ctx):
     await ctx.send(stuff)
 
 
+@bot.group(invoke_without_command=True)
 @commands.is_owner()
+async def responses(ctx):
+    output = ""
+    for k, v in response_json.items():
+        output += "%s: %s\n\n" % (k, v)
+    await ctx.send(output or "No responses set")
+
+
+@responses.command(name="add")
+@commands.is_owner()
+async def responses_add(ctx, key: str, *, response: str):
+    response_json[key] = response
+    await ctx.send("Add operation successful")
+    save()
+
+
+@responses.command(name="remove")
+@commands.is_owner()
+async def responses_remove(ctx, *, key: str):
+    response_json.pop(key)
+    await ctx.send("Remove operation successful")
+    save()
+
+
 @bot.command()
+@commands.is_owner()
 async def set_join_message(ctx, *, arg: str):
     global join_message
     join_message = arg
