@@ -10,7 +10,7 @@ channel_id = 354019501865435137
 channel = None
 join_channel_id = 122051404582879233
 join_channel = None
-join_message = "https://imgur.com/dDl8jdb"
+join_message = "https://imgur.com/dDl8jdb {.name}#{.discriminator} joined!"
 stuff = {}
 response_json = json.loads(open("responses.json").read())
 
@@ -57,8 +57,8 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
-    # noinspection PyUnresolvedReferences
-    await join_channel.send(join_message)
+    if member.guild.id == 122051404582879233:
+        await join_channel.send(join_message.format(member, member))
 
 
 @bot.event
@@ -194,6 +194,12 @@ async def set_join_message(ctx, *, arg: str):
     global join_message
     join_message = arg
     await ctx.send("New join join_message is {}".format(arg))
+
+
+@bot.command(name="eval")
+@commands.is_owner()
+async def _eval(ctx, *, args: str):
+    await ctx.send(eval(args))
 
 
 bot.run(open("Token.txt").read())
