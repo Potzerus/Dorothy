@@ -3,4 +3,5 @@ class Entity:
         self.name = name
         self.x, self.y = x, y
 
-
+    def tick(self):
+        pass

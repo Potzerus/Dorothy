@@ -1,0 +1,14 @@
+{
+  "Fe": {
+    "name": "Iron",
+    "density": 5
+  },
+  "Aq": {
+    "name": "Water",
+    "density": 1
+  },
+  "Er": {
+    "name": "Error",
+    "density": 0
+  }
+}
