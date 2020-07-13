@@ -1,3 +1,6 @@
+from util.Resources import resources
+
+
 class Tile:
     tile_dict = {}
 
@@ -11,6 +14,9 @@ class Tile:
     def __repr__(self):
         return "X"
 
+    def export(self):
+        return self.__repr__()
+
     def tick(self):
         pass
 
@@ -19,6 +25,9 @@ class NeutralTile(Tile):
 
     def __repr__(self):
         return "O"
+
+    def export(self):
+        return ""
 
 
 Tile.tile_dict['O'] = NeutralTile
@@ -34,8 +43,22 @@ Tile.tile_dict['X'] = ErrorTile
 
 class ResourceTile(Tile):
 
+    def __init__(self, arg: str):
+        if not arg:
+            self.resource = "Error"
+            self.amount = 0
+        else:
+            self.resource = resources[arg[0:2]]
+            self.amount = int(arg[2:])
+
     def __repr__(self):
         return "R"
+
+    def export(self):
+        output = "R"
+        output += list(resources.keys())[list(resources.values()).index(self.resource)]
+        output += str(self.amount)
+        return output
 
 
 Tile.tile_dict['R'] = ResourceTile
@@ -60,4 +83,10 @@ class Map:
             output += "\n"
         return output
 
-print(Map(open("../DefaultMap").read()))
+    def export(self):
+        output = ""
+        for y in range(len(self.grid)):
+            for x in range(len(self.grid[y])):
+                output += self.grid[y][x].export() + " "
+            output += "\n"
+        return output
