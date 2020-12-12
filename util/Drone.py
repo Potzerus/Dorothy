@@ -1,5 +1,6 @@
 from util.Entities import Entity
 import json
+import discord
 
 part_dict = json.loads(open("Parts.json").read())
 resources = json.loads(open("Resources.json").read())
@@ -49,9 +50,6 @@ class Drone(Entity):
             self.task_name = None
             return name
 
-    def add_instruction(self, task, time: int, name: str = "Unnamed Task"):
-        self.instructions.append((task, time, name))
-
     def calc_cargo_mass(self):
         total = 0
         for resource, amount in self.cargo.items():
@@ -63,3 +61,11 @@ class Drone(Entity):
 
     def __repr__(self):
         return "{.name}\nTask: {.task_name}\nStats: {.stats}".format(self, self, self)
+
+    def add_instruction(self, task, time: int, name: str = "Unnamed Task"):
+        self.instructions.append((task, time, name))
+
+    def embed(self):
+        _embed = discord.Embed(title=self.name)
+        _embed.description = str(self.stats)
+        return _embed
