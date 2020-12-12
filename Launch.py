@@ -10,7 +10,8 @@ reactions = {}
 response_json = json.loads(open("responses.json").read())
 
 load_cogs = [
-    cogs.Chunii
+    cogs.Drone,
+    cogs.Chuni
 ]
 for cog in load_cogs:
     bot.add_cog(cog(bot))
