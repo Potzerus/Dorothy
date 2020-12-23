@@ -11,7 +11,8 @@ response_json = json.loads(open("responses.json").read())
 
 load_cogs = [
     # cogs.Drones,
-    cogs.Chunii
+    cogs.Chunii,
+    cogs.OdaCord
 ]
 for cog in load_cogs:
     bot.add_cog(cog(bot))

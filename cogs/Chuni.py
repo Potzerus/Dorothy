@@ -20,7 +20,6 @@ class Chunii(commands.Cog):
         self.join_message = "https://imgur.com/dDl8jdb {.name}#{.discriminator} joined!"
         self.stuff = {}
 
-
     def get_balance(self, id):
         id = str(id)
         if id not in self.data:
@@ -35,7 +34,6 @@ class Chunii(commands.Cog):
     def get_leaderboard(self):
         leaderboard = dict(self.data)
         return sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
-
 
     def save(self):
         with open("../Points.json", "w") as da_file:
