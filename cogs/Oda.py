@@ -40,7 +40,7 @@ class OdaCord(Cog):
         else:
             return False
 
-    @commands.command(aliases=["oc"])
+    @commands.group(aliases=["oc"])
     async def odacoins(self, ctx, target: discord.Member = None):
         if not target:
             target = ctx.author

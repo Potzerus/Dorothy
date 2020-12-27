@@ -11,7 +11,7 @@ response_json = json.loads(open("responses.json").read())
 
 load_cogs = [
     # cogs.Drones,
-    cogs.Chunii,
+    #cogs.Chunii,
     cogs.OdaCord
 ]
 for cog in load_cogs:
@@ -109,5 +109,11 @@ async def set_join_message(ctx, *, arg: str):
 async def _eval(ctx, *, args: str):
     await ctx.send(eval(args))
 
+
+@bot.command(name="leave")
+@commands.is_owner()
+async def _leave(ctx, server_id):
+    target = await ctx.bot.fetch_guild(server_id)
+    await target.leave()
 
 bot.run(open("Token.txt").read())
