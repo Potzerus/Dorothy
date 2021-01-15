@@ -8,10 +8,10 @@ bot = commands.Bot(command_prefix=">")
 
 reactions = {}
 response_json = json.loads(open("responses.json").read())
-
+join_message = ""
 load_cogs = [
     # cogs.Drones,
-    #cogs.Chunii,
+    # cogs.Chunii,
     cogs.OdaCord
 ]
 for cog in load_cogs:
@@ -22,6 +22,10 @@ def save():
     with open("responses.json", "w") as da_file:
         da_file.write(json.dumps(response_json))
 
+def odacheck():
+    def predicate(ctx):
+        return ctx.guild.id == 747340433398693959
+    return predicate
 
 @bot.event
 async def on_ready():
@@ -45,7 +49,7 @@ async def on_command_error(ctx, error):
 async def on_message(message):
     await bot.process_commands(message)
     if not message.author.bot:
-        for k, v in response_json.items():
+        for k, v in response_json.get(str(message.guild.id), {}).items():
             if k in message.content.lower():
                 await message.channel.send(v)
                 break
@@ -81,17 +85,17 @@ async def responses(ctx):
 
 
 @responses.command(name="add")
-@commands.is_owner()
+@commands.check_any(commands.has_permissions(manage_channels=True),odacheck())
 async def responses_add(ctx, key: str, *, response: str):
-    response_json[key] = response
+    response_json.setdefault(str(ctx.guild.id), {})[key] = response
     await ctx.send("Add operation successful")
     save()
 
 
 @responses.command(name="remove")
-@commands.is_owner()
+@commands.check_any(commands.has_permissions(manage_channels=True),odacheck())
 async def responses_remove(ctx, *, key: str):
-    response_json.pop(key)
+    response_json[str(ctx.guild.id)].pop(key)
     await ctx.send("Remove operation successful")
     save()
 
@@ -115,5 +119,6 @@ async def _eval(ctx, *, args: str):
 async def _leave(ctx, server_id):
     target = await ctx.bot.fetch_guild(server_id)
     await target.leave()
+
 
 bot.run(open("Token.txt").read())

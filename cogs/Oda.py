@@ -13,7 +13,7 @@ class OdaCord(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        self.data = json.loads(open("Odacoins.json").read())
+        self.data = json.loads(open("Oda.json").read())
 
     def get_balance(self, id):
         id = str(id)
