@@ -22,10 +22,13 @@ def save():
     with open("responses.json", "w") as da_file:
         da_file.write(json.dumps(response_json))
 
+
 def odacheck():
-    def predicate(ctx):
+    async def predicate(ctx):
         return ctx.guild.id == 747340433398693959
-    return predicate
+
+    return commands.check(predicate)
+
 
 @bot.event
 async def on_ready():
@@ -85,7 +88,7 @@ async def responses(ctx):
 
 
 @responses.command(name="add")
-@commands.check_any(commands.has_permissions(manage_channels=True),odacheck())
+@commands.check_any(commands.has_permissions(manage_channels=True), odacheck())
 async def responses_add(ctx, key: str, *, response: str):
     response_json.setdefault(str(ctx.guild.id), {})[key] = response
     await ctx.send("Add operation successful")
@@ -93,7 +96,7 @@ async def responses_add(ctx, key: str, *, response: str):
 
 
 @responses.command(name="remove")
-@commands.check_any(commands.has_permissions(manage_channels=True),odacheck())
+@commands.check_any(commands.has_permissions(manage_channels=True), odacheck())
 async def responses_remove(ctx, *, key: str):
     response_json[str(ctx.guild.id)].pop(key)
     await ctx.send("Remove operation successful")
