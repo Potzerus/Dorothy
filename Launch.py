@@ -82,7 +82,7 @@ async def repeat(ctx, *, stuff: str):
 @commands.is_owner()
 async def responses(ctx):
     output = ""
-    for k, v in response_json.items():
+    for k, v in response_json.get(str(ctx.guild.id),{}).items():
         output += "%s: %s\n\n" % (k, v)
     await ctx.send(output or "No responses set")
 
@@ -95,7 +95,7 @@ async def responses_add(ctx, key: str, *, response: str):
     save()
 
 
-@responses.command(name="remove")
+@responses.command(name="remove",alias=["rem"])
 @commands.check_any(commands.has_permissions(manage_channels=True), odacheck())
 async def responses_remove(ctx, *, key: str):
     response_json[str(ctx.guild.id)].pop(key)

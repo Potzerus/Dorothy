@@ -17,18 +17,18 @@ class OdaCord(Cog):
 
     def get_balance(self, id):
         id = str(id)
-        if id not in self.data:
-            self.data[id] = 0
-        return self.data[id]
+        self.data.setdefault(id, dict())
+        self.data[id].setdefault("odacoins", 0)
+        return self.data[id]["odacoins"]
 
     def save(self):
-        with open("../Points.json", "w") as da_file:
-            da_file.write(json.dumps(self.data))
+        with open("Oda.json", "+w") as da_file:
+            return da_file.write(json.dumps(self.data))
 
     def change_balance(self, id, amount):
         self.get_balance(id)
         id = str(id)
-        self.data[id] += amount
+        self.data[id]["odacoins"] += amount
 
     def get_leaderboard(self):
         leaderboard = dict(self.data)
@@ -40,36 +40,64 @@ class OdaCord(Cog):
         else:
             return False
 
-    @commands.group(aliases=["oc"])
+    @commands.group(aliases=["oc", "odacoin"], invoke_without_command=True)
     async def odacoins(self, ctx, target: discord.Member = None):
         if not target:
             target = ctx.author
-        await ctx.send("{.name} has {} odacoins".format(target, self.get_balance(target.id)))
+        balance = self.get_balance(target.id)
+        if target.id == 273988946264981506:
+            balance = "∞"
+        await ctx.send("{.name} has {} odacoins".format(target, balance))
 
-    @odacoins.command(name="add", aliases=["make"])
+    @odacoins.command(name="set")
     @commands.check(is_oda)
-    async def coins_add(self, ctx, target: discord.Member = None, amount: int = 0):
+    async def coins_set(self, ctx, target: discord.Member = None, amount: int = 0):
         if target is None:
             target = ctx.author
-        self.change_balance(target.id, amount)
-        await ctx.send("Balance changed by %d!" % amount)
+        balance = self.get_balance(target)
+        self.change_balance(target.id, amount - balance)
+        await ctx.send("Balance set to %d!" % amount)
         self.save()
 
-    @odacoins.command()
-    async def give(self, ctx, other: discord.Member, amount: int = 0):
+    @odacoins.command(name="give")
+    async def coins_give(self, ctx, other: discord.Member, amount: int = 0):
         if amount == 0:
-            await ctx.send("You really want to give nothing? How heartless")
+            await ctx.send("You really do be out here giving nothing huh")
             return
         if amount < 0:
-            await ctx.send("You know stealing is wrong right?(and wouldn't be fun if i added it like that)")
+            await ctx.send("You know stealing is wrong right?")
             return
-        if ctx.author == other:
-            await ctx.send("You can't give yourself points silly")
-            return
-        if self.get_balance(ctx.author.id) < amount:
+        if self.get_balance(ctx.author.id) < amount and ctx.author.id != 273988946264981506:
             await ctx.send("You don't have that much to give!")
             return
         self.change_balance(ctx.author.id, amount * -1)
         self.change_balance(other.id, amount)
         await ctx.send("Transaction successful!")
         self.save()
+
+    @odacoins.command(name="take")
+    @commands.check(is_oda)
+    async def coins_take(self, ctx, other: discord.Member, amount: int = 0):
+        self.change_balance(other.id, amount * -1)
+        self.change_balance(ctx.author.id, amount)
+        await ctx.send("Took %d odacoins" % amount)
+        self.save()
+
+    @commands.group(invoke_without_command=True)
+    async def bet(self, ctx, option=None):
+        """Does nothing right now, one sec"""
+        pass
+
+    @bet.command(name="create")
+    @commands.check(is_oda)
+    async def bet_create(self, ctx, *options):
+        bets = self.data["bets"]
+        if len(bets) != 0:
+            await ctx.send("A bet is still running")
+        for option in options:
+            pass
+
+    @bet.command(name="end")
+    @commands.check(is_oda)
+    async def bet_end(self, ctx, winner: int):
+        pass
