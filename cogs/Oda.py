@@ -63,7 +63,7 @@ class OdaCord(Cog):
         await ctx.send("Balance set to %d!" % amount)
         self.save()
 
-    @odacoins.command(name="give")
+    @odacoins.command(name="give",aliases=["add"])
     async def coins_give(self, ctx, other: discord.Member, amount: int = 0):
         if amount == 0:
             await ctx.send("You really do be out here giving nothing huh")
@@ -79,7 +79,7 @@ class OdaCord(Cog):
         await ctx.send("Transaction successful!")
         self.save()
 
-    @odacoins.command(name="take")
+    @odacoins.command(name="take",aliases=["remove","rem"])
     @commands.check(is_oda)
     async def coins_take(self, ctx, other: discord.Member, amount: int = 0):
         self.change_balance(other.id, amount * -1)
