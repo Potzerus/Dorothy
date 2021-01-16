@@ -30,6 +30,11 @@ class OdaCord(Cog):
         id = str(id)
         self.data[id]["odacoins"] += amount
 
+    def set_balance(self, id, amount):
+        self.get_balance(id)
+        id = str(id)
+        self.data[id]["odacoins"] = amount
+
     def get_leaderboard(self):
         leaderboard = dict(self.data)
         return sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
@@ -54,8 +59,7 @@ class OdaCord(Cog):
     async def coins_set(self, ctx, target: discord.Member = None, amount: int = 0):
         if target is None:
             target = ctx.author
-        balance = self.get_balance(target)
-        self.change_balance(target.id, amount - balance)
+        self.set_balance(target.id, amount)
         await ctx.send("Balance set to %d!" % amount)
         self.save()
 
