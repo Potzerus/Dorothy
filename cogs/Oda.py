@@ -132,8 +132,8 @@ class OdaCord(Cog):
         for bounty in bounties:
             embed.add_field(name="%s: %s %s" % (bounty["name"], str(bounty["reward"]), "odacoins"), value=bounty[
                 "description"], inline=False)
-            if len(bounties) == 0:
-                embed.description = "No Bounties!"
+        if len(bounties) == 0:
+            embed.description = "No Bounties!"
 
         await ctx.send(embed=embed)
 
