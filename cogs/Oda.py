@@ -29,11 +29,13 @@ class OdaCord(Cog):
         self.get_balance(id)
         id = str(id)
         self.data[id]["odacoins"] += amount
+        self.save()
 
     def set_balance(self, id, amount):
         self.get_balance(id)
         id = str(id)
         self.data[id]["odacoins"] = amount
+        self.save()
 
     def get_leaderboard(self):
         leaderboard = dict(self.data)
@@ -61,9 +63,8 @@ class OdaCord(Cog):
             target = ctx.author
         self.set_balance(target.id, amount)
         await ctx.send("Balance set to %d!" % amount)
-        self.save()
 
-    @odacoins.command(name="give",aliases=["add"])
+    @odacoins.command(name="give", aliases=["add"])
     async def coins_give(self, ctx, other: discord.Member, amount: int = 0):
         if amount == 0:
             await ctx.send("You really do be out here giving nothing huh")
@@ -77,15 +78,13 @@ class OdaCord(Cog):
         self.change_balance(ctx.author.id, amount * -1)
         self.change_balance(other.id, amount)
         await ctx.send("Transaction successful!")
-        self.save()
 
-    @odacoins.command(name="take",aliases=["remove","rem"])
+    @odacoins.command(name="take", aliases=["remove", "rem"])
     @commands.check(is_oda)
     async def coins_take(self, ctx, other: discord.Member, amount: int = 0):
         self.change_balance(other.id, amount * -1)
         self.change_balance(ctx.author.id, amount)
         await ctx.send("Took %d odacoins" % amount)
-        self.save()
 
     @commands.group(invoke_without_command=True)
     async def bet(self, ctx, option=None):
@@ -105,3 +104,18 @@ class OdaCord(Cog):
     @commands.check(is_oda)
     async def bet_end(self, ctx, winner: int):
         pass
+
+    @commands.group(name="buy", invoke_without_command=True)
+    async def buy(self, ctx):
+        pass
+
+    @buy.command(name="kekenickname", aliases=["kn", "kekenick"])
+    async def keke_nickname(self, ctx, *, new_name: str):
+        if self.get_balance(ctx.author.id) < 15 and ctx.author.id != 273988946264981506:
+            await ctx.send("You don't have enough earnings!")
+            return
+        self.change_balance(ctx.author.id, -15)
+        odacord = self.bot.get_guild(747340433398693959)
+        keke = odacord.get_member(206203994786234368)
+        await keke.edit(reason="%s bought it with Odacoins" % ctx.author.name, nick=new_name)
+        await ctx.send("Transaction successful!")

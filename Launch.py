@@ -79,7 +79,6 @@ async def repeat(ctx, *, stuff: str):
 
 
 @bot.group(invoke_without_command=True)
-@commands.is_owner()
 async def responses(ctx):
     output = ""
     for k, v in response_json.get(str(ctx.guild.id),{}).items():
