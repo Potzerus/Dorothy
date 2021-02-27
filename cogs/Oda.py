@@ -15,6 +15,11 @@ class OdaCord(Cog):
 
         self.data = json.loads(open("Oda.json").read())
 
+    def get_data(self, name, default=None):
+        if default is not None:
+            self.data.setdefault(name, default)
+        return self.data[name]
+
     def get_balance(self, id):
         id = str(id)
         self.data.setdefault(id, dict())
@@ -119,3 +124,44 @@ class OdaCord(Cog):
         keke = odacord.get_member(206203994786234368)
         await keke.edit(reason="%s bought it with Odacoins" % ctx.author.name, nick=new_name)
         await ctx.send("Transaction successful!")
+
+    @commands.group(aliases=["bounties"], invoke_without_command=True)
+    async def bounty(self, ctx):
+        embed = discord.Embed(title="Current Bounties")
+        bounties = self.get_data("bounties", [])
+        for bounty in bounties:
+            embed.add_field(name="%s: %s %s" % (bounty["name"], str(bounty["reward"]), "odacoins"), value=bounty[
+                "description"], inline=False)
+            if len(bounties) == 0:
+                embed.description = "No Bounties!"
+
+        await ctx.send(embed=embed)
+
+    @bounty.command(name="create", aliases=["make", "issue"])
+    @commands.check(is_oda)
+    async def bounty_create(self, ctx, name: str, reward: int, *, description: str = "-"):
+        """
+        >bounty create Vibe 10 Have a good day or smthn idk
+        >bounty create "Destroy Monke" 20 Perform the ultimate sacrifice, destroy monke once and for all
+        """
+        bounty = {
+            "name": name,
+            "reward": reward,
+            "description": description
+        }
+        bounties = self.get_data("bounties", [])
+        bounties.append(bounty)
+        self.save()
+        await ctx.send("Bounty Created!")
+
+    @bounty.command(name="remove", aliases=["delete", "clear"])
+    @commands.check(is_oda)
+    async def bounty_remove(self, ctx, *, name: str):
+        bounties = self.get_data("bounties", [])
+        for i in range(len(bounties)):
+            if bounties[i]["name"].lower() == name.lower():
+                bounties.remove(bounties[i])
+                await ctx.send("Successfully cleared Bounty")
+                self.save()
+                return
+        await ctx.send("No Bounty with that name found")
