@@ -4,9 +4,18 @@ from discord.ext import commands
 from discord.ext.commands import Cog
 import discord
 
+auth_ids = [
+    273988946264981506,
+    125660719323676672
+]
+
 
 def is_oda(ctx):
     return ctx.author.id == 273988946264981506
+
+
+def is_authorized(ctx):
+    return ctx.author.id in auth_ids
 
 
 class OdaCord(Cog):
@@ -20,11 +29,17 @@ class OdaCord(Cog):
             self.data.setdefault(name, default)
         return self.data[name]
 
-    def get_balance(self, id):
-        id = str(id)
-        self.data.setdefault(id, dict())
-        self.data[id].setdefault("odacoins", 0)
-        return self.data[id]["odacoins"]
+    def get_balance(self, _id):
+        _id = str(_id)
+        self.data.setdefault(_id, dict())
+        self.data[_id].setdefault("odacoins", 0)
+        return self.data[_id]["odacoins"]
+
+    def get_inventory(self, _id):
+        person = self.get_data(_id, dict())
+        person.setdefault("inventory", [])
+
+        return person["inventory"]
 
     def save(self):
         with open("Oda.json", "+w") as da_file:
@@ -165,3 +180,40 @@ class OdaCord(Cog):
                 self.save()
                 return
         await ctx.send("No Bounty with that name found")
+
+    @commands.command(aliases=["inv", "i"])
+    async def inventory(self, ctx):
+        person = self.get_data(ctx.author.id, dict())
+        person.setdefault("inventory", [])
+
+        inv = self.get_inventory(ctx.author.id)
+        output = discord.Embed(title="Inventory")
+        for item in inv:
+            output.description = output.description + item['name']
+            if "amount" in item and item["amount"] != 1:
+                output.description = output.description + "x" + item["amount"]
+            output.description = output.description + "\n"
+
+        if len(output.description) == 0:
+            output.description = "Empty Inventory"
+
+    @commands.group(invoke_without_command=True)
+    async def status(self, ctx, target: discord.Member):
+        status = self.get_data(str(target.id), {}).setdefault("status", [])
+        await ctx.send(status)
+
+    @status.command(name="apply")
+    @commands.check(is_authorized)
+    async def status_apply(self, ctx, condition: str, *, target: discord.Member):
+        status = self.get_data(str(target.id), {}).setdefault("status", [])
+        status.append(condition)
+        self.save()
+        await ctx.send("Application successful")
+
+    @status.command(name="remove")
+    @commands.check(is_authorized)
+    async def status_remove(self, ctx, condition: str, *, target: discord.Member):
+        status = self.get_data(str(target.id), {}).setdefault("status", [])
+        status.append(condition)
+        self.save()
+        await ctx.send("Application successful")
