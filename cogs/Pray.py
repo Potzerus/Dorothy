@@ -4,7 +4,7 @@ import random
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog
-from util.pray_utils import *
+# from util.pray_utils import *
 
 
 class PrayCog(Cog):
@@ -22,7 +22,7 @@ class PrayCog(Cog):
         return self.players.get(user_id, None)
 
     def gen_char(self, user_id):
-        char = Character(user_id)
+        char = None # Character(user_id)
         self.players[user_id] = char
         return char
 
