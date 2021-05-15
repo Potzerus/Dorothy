@@ -15,7 +15,7 @@ class Panopticon(commands.Cog):
     async def on_message(self, message):
         if message.content == "!updog":
             if message.author.id in [122739797646245899, 125660719323676672]:
-                if self.bot.get_user(673737213959208980).status == discord.Status.online:
+                if self.bot.get_user(673737213959208980).Status == discord.Status.online:
                     self.tokens += 1
                 await self.bot.get_guild(303307934774067210).get_channel(842931370695196682).send(
                     "Restart Initiated")
