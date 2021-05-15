@@ -3,3 +3,4 @@ from .Drones import Drone
 from .Oda import OdaCord
 from .Pray import PrayCog
 from .Test import TestCog
+from .Panopticon import Panopticon
