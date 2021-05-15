@@ -11,10 +11,10 @@ response_json = json.loads(open("responses.json").read())
 join_message = ""
 load_cogs = [
     # cogs.Drones,
-    cogs.Chunii,
+    # cogs.Chunii,
     cogs.OdaCord,
     # cogs.TestCog,
-    cogs.PrayCog,
+    # cogs.PrayCog,
     cogs.Panopticon,
 ]
 for cog in load_cogs:
