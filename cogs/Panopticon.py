@@ -25,7 +25,7 @@ class Panopticon(commands.Cog):
         if before.id != 673737213959208980:
             return
 
-        if after.status != discord.Status.offline:
+        if after.Status != discord.Status.offline:
             return
 
         if self.tokens > 0:
