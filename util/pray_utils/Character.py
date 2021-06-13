@@ -17,7 +17,8 @@ class Character:
         "titles": set(),
         # Temporary alterations to stats
         "effects": set(),
-        #
+        # permanent level up apply bonuses to/enable certain stats/actions list of skill objects
+        "skills": [],
     }
     named_attrs = [
         "max_health",
@@ -32,7 +33,6 @@ class Character:
     ]
 
     def __init__(self, owner_id, **info):
-
         self.owner = owner_id
         self.name = info.pop("name", "Adventurer%d" % random.randint(0, 1024))
         for attr in self.named_attrs:
@@ -40,4 +40,3 @@ class Character:
         # TODO: implement loading from dict
 
         self.others = {k: v for k, v in info.items()}
-

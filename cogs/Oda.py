@@ -4,6 +4,8 @@ from discord.ext import commands
 from discord.ext.commands import Cog
 import discord
 
+from oda import Data, Money, Item, Inventory
+
 auth_ids = [
     273988946264981506,
     125660719323676672
@@ -22,45 +24,6 @@ class OdaCord(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        self.data = json.loads(open("Oda.json").read())
-
-    def get_data(self, name, default=None):
-        if default is not None:
-            self.data.setdefault(name, default)
-        return self.data[name]
-
-    def get_balance(self, _id):
-        _id = str(_id)
-        self.data.setdefault(_id, dict())
-        self.data[_id].setdefault("odacoins", 0)
-        return self.data[_id]["odacoins"]
-
-    def get_inventory(self, _id):
-        person = self.get_data(_id, dict())
-        person.setdefault("inventory", [])
-
-        return person["inventory"]
-
-    def save(self):
-        with open("Oda.json", "+w") as da_file:
-            return da_file.write(json.dumps(self.data))
-
-    def change_balance(self, id, amount):
-        self.get_balance(id)
-        id = str(id)
-        self.data[id]["odacoins"] += amount
-        self.save()
-
-    def set_balance(self, id, amount):
-        self.get_balance(id)
-        id = str(id)
-        self.data[id]["odacoins"] = amount
-        self.save()
-
-    def get_leaderboard(self):
-        leaderboard = dict(self.data)
-        return sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
-
     async def cog_check(self, ctx):
         if ctx.guild is not None and ctx.guild.id == 747340433398693959:
             return True
@@ -71,7 +34,7 @@ class OdaCord(Cog):
     async def odacoins(self, ctx, target: discord.Member = None):
         if not target:
             target = ctx.author
-        balance = self.get_balance(target.id)
+        balance = Money.get_balance(target.id)
         if target.id == 273988946264981506:
             balance = "∞"
         await ctx.send("{.name} has {} odacoins".format(target, balance))
@@ -81,7 +44,7 @@ class OdaCord(Cog):
     async def coins_set(self, ctx, target: discord.Member = None, amount: int = 0):
         if target is None:
             target = ctx.author
-        self.set_balance(target.id, amount)
+        Money.set_balance(target.id, amount)
         await ctx.send("Balance set to %d!" % amount)
 
     @odacoins.command(name="give", aliases=["add"])
@@ -92,38 +55,20 @@ class OdaCord(Cog):
         if amount < 0:
             await ctx.send("You know stealing is wrong right?")
             return
-        if self.get_balance(ctx.author.id) < amount and ctx.author.id != 273988946264981506:
+        if Money.get_balance(ctx.author.id) < amount and ctx.author.id != 273988946264981506:
             await ctx.send("You don't have that much to give!")
             return
-        self.change_balance(ctx.author.id, amount * -1)
-        self.change_balance(other.id, amount)
+        if not is_oda(ctx):
+            Money.change_balance(ctx.author.id, amount * -1)
+        Money.change_balance(other.id, amount)
         await ctx.send("Transaction successful!")
 
     @odacoins.command(name="take", aliases=["remove", "rem"])
     @commands.check(is_oda)
     async def coins_take(self, ctx, other: discord.Member, amount: int = 0):
-        self.change_balance(other.id, amount * -1)
-        self.change_balance(ctx.author.id, amount)
+        Money.change_balance(other.id, amount * -1)
+        Money.change_balance(ctx.author.id, amount)
         await ctx.send("Took %d odacoins" % amount)
-
-    @commands.group(invoke_without_command=True)
-    async def bet(self, ctx, option=None):
-        """Does nothing right now, one sec"""
-        pass
-
-    @bet.command(name="create")
-    @commands.check(is_oda)
-    async def bet_create(self, ctx, *options):
-        bets = self.data["bets"]
-        if len(bets) != 0:
-            await ctx.send("A bet is still running")
-        for option in options:
-            pass
-
-    @bet.command(name="end")
-    @commands.check(is_oda)
-    async def bet_end(self, ctx, winner: int):
-        pass
 
     @commands.group(name="buy", invoke_without_command=True)
     async def buy(self, ctx):
@@ -131,19 +76,29 @@ class OdaCord(Cog):
 
     @buy.command(name="kekenickname", aliases=["kn", "kekenick"])
     async def keke_nickname(self, ctx, *, new_name: str):
-        if self.get_balance(ctx.author.id) < 15 and ctx.author.id != 273988946264981506:
+        if Money.get_balance(ctx.author.id) < 15 and ctx.author.id != 273988946264981506:
             await ctx.send("You don't have enough earnings!")
             return
-        self.change_balance(ctx.author.id, -15)
+        Money.change_balance(ctx.author.id, -15)
         odacord = self.bot.get_guild(747340433398693959)
         keke = odacord.get_member(206203994786234368)
         await keke.edit(reason="%s bought it with Odacoins" % ctx.author.name, nick=new_name)
         await ctx.send("Transaction successful!")
 
+    @buy.command()
+    async def ammo(self, ctx, amount: int = 1):
+        price = Data.get("ammo-price", 100000000000000)
+        if Money.get_balance(ctx.author.id) < price * amount and not is_oda(ctx):
+            await ctx.send(f"You don't have enough earnings!\nYou need {price * amount}")
+            return
+        Money.change_balance(ctx.author.id, -price * amount)
+        Inventory.give_resource(ctx.author.id, "Artillery-Ammo", amount)
+        await ctx.send(f"Bought {amount} artillery ammo")
+
     @commands.group(aliases=["bounties"], invoke_without_command=True)
     async def bounty(self, ctx):
         embed = discord.Embed(title="Current Bounties")
-        bounties = self.get_data("bounties", [])
+        bounties = Data.get("bounties", [])
         for bounty in bounties:
             embed.add_field(name="%s: %s %s" % (bounty["name"], str(bounty["reward"]), "odacoins"), value=bounty[
                 "description"], inline=False)
@@ -164,56 +119,82 @@ class OdaCord(Cog):
             "reward": reward,
             "description": description
         }
-        bounties = self.get_data("bounties", [])
+        bounties = Data.get("bounties", [])
         bounties.append(bounty)
-        self.save()
+        Data.save()
         await ctx.send("Bounty Created!")
 
     @bounty.command(name="remove", aliases=["delete", "clear"])
     @commands.check(is_oda)
     async def bounty_remove(self, ctx, *, name: str):
-        bounties = self.get_data("bounties", [])
+        bounties = Data.get("bounties", [])
         for i in range(len(bounties)):
             if bounties[i]["name"].lower() == name.lower():
                 bounties.remove(bounties[i])
                 await ctx.send("Successfully cleared Bounty")
-                self.save()
+                Data.save()
                 return
         await ctx.send("No Bounty with that name found")
 
     @commands.command(aliases=["inv", "i"])
     async def inventory(self, ctx):
-        person = self.get_data(ctx.author.id, dict())
-        person.setdefault("inventory", [])
 
-        inv = self.get_inventory(ctx.author.id)
+        inv = Inventory.get(ctx.author.id)
         output = discord.Embed(title="Inventory")
-        for item in inv:
-            output.description = output.description + item['name']
-            if "amount" in item and item["amount"] != 1:
-                output.description = output.description + "x" + item["amount"]
+        output.description = ""
+        for item, amount in inv.items():
+            output.description = output.description + item
+            if amount != 1:
+                output.description = output.description + "x" + str(amount)
             output.description = output.description + "\n"
 
         if len(output.description) == 0:
-            output.description = "Empty Inventory"
+            output.description = "Empty"
+        await ctx.send(embed=output)
 
     @commands.group(invoke_without_command=True)
     async def status(self, ctx, target: discord.Member):
-        status = self.get_data(str(target.id), {}).setdefault("status", [])
+        status = Data.get_attribute(target.id, "status", [])
         await ctx.send(status)
 
     @status.command(name="apply")
     @commands.check(is_authorized)
     async def status_apply(self, ctx, condition: str, *, target: discord.Member):
-        status = self.get_data(str(target.id), {}).setdefault("status", [])
+        status = Data.get_attribute(target.id, "status", [])
         status.append(condition)
-        self.save()
+        Data.set_attribute(target.id, "status", status)
         await ctx.send("Application successful")
 
     @status.command(name="remove")
     @commands.check(is_authorized)
     async def status_remove(self, ctx, condition: str, *, target: discord.Member):
-        status = self.get_data(str(target.id), {}).setdefault("status", [])
-        status.append(condition)
-        self.save()
-        await ctx.send("Application successful")
+        status: list = Data.get_attribute(target.id, "status", [])
+        status.remove(condition)
+        Data.set_attribute(target.id,"status",status)
+        await ctx.send("De-Application successful")
+
+    @commands.group(invoke_without_command=True)
+    async def artillery(self, ctx, target: discord.Member = None, shots: int = 1):
+        if not Data.get_attribute(ctx.author.id, "artillery", False):
+            await ctx.send("Clearly, you don't own any artillery")
+            return
+        if not target:
+            ammo = "Artillery-Ammo"
+            await ctx.send(f"Your artillery is ready to fire, you have {Inventory.get_resource(ctx.author.id, ammo)} shots!")
+
+    @artillery.command()
+    async def shoot(self, ctx):
+        pass
+
+    @commands.command()
+    @commands.check(is_authorized)
+    async def give(self, ctx, itemname, target: discord.Member = None, amount: int = 1):
+        if target is None:
+            target = ctx.author
+        target = target.id
+        if Inventory.give_resource(target, itemname, amount):
+            await ctx.send("Success!")
+            return
+        else:
+            await ctx.send("Epic Embed fail!")
+            return

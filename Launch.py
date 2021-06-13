@@ -15,7 +15,7 @@ load_cogs = [
     cogs.OdaCord,
     # cogs.TestCog,
     # cogs.PrayCog,
-    cogs.Panopticon,
+    # cogs.Panopticon,
 ]
 for cog in load_cogs:
     bot.add_cog(cog(bot))
