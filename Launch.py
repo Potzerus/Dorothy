@@ -1,6 +1,6 @@
 import asyncio
 
-# import cogs
+import cogs
 from discord.ext import commands
 import json
 
@@ -12,7 +12,7 @@ join_message = ""
 load_cogs = [
     # cogs.Drones,
     # cogs.Chunii,
-    # cogs.OdaCord,
+    cogs.OdaCord,
     # cogs.TestCog,
     # cogs.PrayCog,
     # cogs.Panopticon,
