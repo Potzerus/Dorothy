@@ -54,6 +54,8 @@ async def on_command_error(ctx, error):
 @bot.event
 async def on_message(message):
     await bot.process_commands(message)
+    if message.author.id in response_json.get("excluded", []):
+        return
     if not message.author.bot:
         for k, v in response_json.get(str(message.guild.id), {}).items():
             if k in message.content.lower():
@@ -84,7 +86,7 @@ async def repeat(ctx, *, stuff: str):
 @bot.group(invoke_without_command=True)
 async def responses(ctx):
     output = ""
-    for k, v in response_json.get(str(ctx.guild.id),{}).items():
+    for k, v in response_json.get(str(ctx.guild.id), {}).items():
         output += "%s: %s\n\n" % (k, v)
     await ctx.send(output or "No responses set")
 
@@ -97,7 +99,7 @@ async def responses_add(ctx, key: str, *, response: str):
     save()
 
 
-@responses.command(name="remove",alias=["rem"])
+@responses.command(name="remove", alias=["rem"])
 @commands.check_any(commands.has_permissions(manage_channels=True), odacheck())
 async def responses_remove(ctx, *, key: str):
     response_json[str(ctx.guild.id)].pop(key)
@@ -124,6 +126,14 @@ async def _eval(ctx, *, args: str):
 async def _leave(ctx, server_id):
     target = await ctx.bot.fetch_guild(server_id)
     await target.leave()
+
+
+@bot.command()
+@commands.is_owner()
+async def exclude(ctx, user_id):
+    response_json.setdefault("excluded", [])
+    response_json["excluded"].append(user_id)
+    save()
 
 
 bot.run(open("Token.txt").read())
