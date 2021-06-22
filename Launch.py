@@ -1,6 +1,6 @@
 import asyncio
 
-import cogs
+# import cogs
 from discord.ext import commands
 import json
 
@@ -12,7 +12,7 @@ join_message = ""
 load_cogs = [
     # cogs.Drones,
     # cogs.Chunii,
-    cogs.OdaCord,
+    # cogs.OdaCord,
     # cogs.TestCog,
     # cogs.PrayCog,
     # cogs.Panopticon,
@@ -54,7 +54,7 @@ async def on_command_error(ctx, error):
 @bot.event
 async def on_message(message):
     await bot.process_commands(message)
-    if message.author.id in response_json.get("excluded", []):
+    if message.author.id in response_json.get("excluded"):
         return
     if not message.author.bot:
         for k, v in response_json.get(str(message.guild.id), {}).items():
@@ -130,7 +130,7 @@ async def _leave(ctx, server_id):
 
 @bot.command()
 @commands.is_owner()
-async def exclude(ctx, user_id):
+async def exclude(ctx, user_id:int):
     response_json.setdefault("excluded", [])
     response_json["excluded"].append(user_id)
     save()
