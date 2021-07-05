@@ -1,8 +1,14 @@
-{
-  "spider legs": {
-    "move time": 4,
-    "type": "main movement",
-    "exotic terrain": 2,
-    "mass": 5
-  }
-}
+[
+  [
+    {
+        "name": "spider leg",
+        "move time": 4,
+        "type": "propulsion",
+        "terrain_penalties": {
+          
+        },
+        "mass": 5
+
+    }
+  ]
+]
