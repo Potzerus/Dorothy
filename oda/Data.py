@@ -1,7 +1,10 @@
 import json
+import _csv
+import csv
 
 data = json.loads(open("Oda.json").read())
-
+reader = csv.reader(open("Oda.csv").read())
+data = None
 
 def save():
     with open("Oda.json", "+w") as da_file:
@@ -19,23 +22,15 @@ def get(name, default=None):
         return None
 
 
-def get_person(_id):
-    _id = str(_id)
-    return get(_id, dict())
-
-
-def get_attribute(_id, name, default=None):
-    person = get_person(_id)
+def get_attribute(_id, attr, default=None):
+    char = get(_id)
     if default is not None:
-        person.setdefault(name, default)
-    return person[name]
+        char.setdefault(attr, default)
+
+
 
 
 # Setters
 
-def set_attribute(_id, name, value):
-    person = get_person(_id)
-    person[name] = value
-    save()
 
 # Misc

@@ -1,12 +1,12 @@
-from oda import Data
+from oda import Data, User
 
 
 def get_balance(_id):
-    return Data.get_attribute(_id, "odacoins", 0)
+    return User.get_attribute(_id, "odacoins", 0)
 
 
 def set_balance(_id, amount):
-    Data.set_attribute(_id, "odacoins", amount)
+    User.set_attribute(_id, "odacoins", amount)
     Data.save()
 
 
